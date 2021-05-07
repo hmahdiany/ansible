@@ -3,10 +3,10 @@ If you want to install HAProxy from source follow the instructions on `haproxy-i
 
 ## Setup a HAProxy cluster with Keepalived: Ansible role
 This project is used to set up a HAProxy cluster with Keepalived. It has a main playbook.yaml file which contains two roles as below:
-
-`keepalived`
-
-`haproxy`
+~~~~
+keepalived
+haproxy
+~~~~
 
 This ansible playbook first install Keepalived and then install HAProxy on `Debian 10`. 
 
@@ -22,27 +22,27 @@ Change `vip` in `group_vars/ha-cluster.yaml` based on your environment. This is 
 
 Then based on what your environment is going to be edit variables in yamle files in `host_vars` directory. Here is the definitions:
 
-`role`: The role of that server in VRRP configuration. It could be `MASTER` or `BACKUP`.
+* `role`: The role of that server in VRRP configuration. It could be `MASTER` or `BACKUP`.
 
-`priority`: The higher priority is for server which has the role `MASTER`.
+* `priority`: The higher priority is for server which has the role `MASTER`.
 
 The variables for installing HAProxy are in `role/haproxy/defaults/main.yaml`. Here is what they are for:
 
-`username`: The username for logging in HAProxy status pages.
+* `username`: The username for logging in HAProxy status pages.
 
-`password`: The password for username which has been defined in previous variable.
+* `password`: The password for username which has been defined in previous variable.
 
-`frontend_name`: The name of "fontend" configuration in HAProxy.
+* `frontend_name`: The name of "fontend" configuration in HAProxy.
 
-`listen_port`: The port which HAProxy is going to bind to. Default IP address is virtual IP  which has been defined in `group_vars/ha-cluster.yaml` and the default port is "80".
+* `listen_port`: The port which HAProxy is going to bind to. Default IP address is virtual IP  which has been defined in `group_vars/ha-cluster.yaml` and the default port is "80".
 
-`mode`: It could be `tcp` or `http`.
+* `mode`: It could be `tcp` or `http`.
 
-`option`: "tcplog" or "httpclose"
+* `option`: "tcplog" or "httpclose"
 
-`bakend_name`: The name of "backend" configuration.
+* `bakend_name`: The name of "backend" configuration.
 
-`k8s_master_servers`: The dictionary which contains upstream server names and IP addresses. Because this HAProxy is going to be used in a k8s cluster the name of this variable starts with "k8s". Feel free to change it but remember to put new variable name in `roles/haproxy/templates/haproxy.cfg`. 
+* `k8s_master_servers`: The dictionary which contains upstream server names and IP addresses. Because this HAProxy is going to be used in a k8s cluster the name of this variable starts with "k8s". Feel free to change it but remember to put new variable name in `roles/haproxy/templates/haproxy.cfg`. 
    
 ### Execution commands
 After doing above steps execute below command:
