@@ -1,4 +1,7 @@
-# Setup a HAProxy cluster with Keepalived: Ansible role
+## Install HAProxy from source: Manual Installation
+If you want to install HAProxy from source follow the instructions on `haproxy-installation` directory.
+
+## Setup a HAProxy cluster with Keepalived: Ansible role
 This project is used to set up a HAProxy cluster with Keepalived. It has a main playbook.yaml file which contains two roles as below:
 
 `keepalived`
@@ -7,10 +10,10 @@ This project is used to set up a HAProxy cluster with Keepalived. It has a main 
 
 This ansible playbook first install Keepalived and then install HAProxy on `Debian 10`. 
 
-## Requirements
+### Requirements
 Install Ansible on your local machine and make sure you have root access on remote machines.
 
-## Role Variables
+### Role Variables
 At first before doing anything edit the `inventory` file based on your server information. After adding your server names change the name of every yaml file in `host_vars` directory based on your server names you've added in `inventory` file.
 
 For installing Keepalived first change below variables:
@@ -41,7 +44,7 @@ The variables for installing HAProxy are in `role/haproxy/defaults/main.yaml`. H
 
 `k8s_master_servers`: The dictionary which contains upstream server names and IP addresses. Because this HAProxy is going to be used in a k8s cluster the name of this variable starts with "k8s". Feel free to change it but remember to put new variable name in `roles/haproxy/templates/haproxy.cfg`. 
    
-## Execution commands
+### Execution commands
 After doing above steps execute below command:
 
 `ansible-playbook -i inventory playbook.yaml`
