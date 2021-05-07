@@ -1,19 +1,19 @@
-## Install Mysql exporter
+# Install Mysql exporter
 Mysql exporter is an exporter which is used to gather database statistics and collect them in Prometheus.
 
-# Download and extract the latest version of mysql exporter
+### Download and extract the latest version of mysql exporter
 ~~~~
 curl -s https://api.github.com/repos/prometheus/mysqld_exporter/releases/latest   | grep browser_download_url   | grep linux-amd64 | cut -d '"' -f 4   | wget -qi -
 tar xf mysqld_exporter*.tar.gz
 ~~~~
 
-# Move binary file to /usr/local/bin
+### Move binary file to /usr/local/bin
 ~~~~
 mv  mysqld_exporter-*.linux-amd64/mysqld_exporter /usr/local/bin/
 chmod +x /usr/local/bin/mysqld_exporter
 ~~~~
 
-# create prometheus exporter database user
+### create prometheus exporter database user
 ~~~~
 CREATE USER 'mysqld_exporter'@'<DatabaseHostIP>' IDENTIFIED BY 'StrongPassword' WITH MAX_USER_CONNECTIONS 2;
 GRANT PROCESS, REPLICATION CLIENT, SELECT ON *.* TO 'mysqld_exporter'@'<DatabaseHostIP>';
@@ -21,7 +21,7 @@ FLUSH PRIVILEGES;
 EXIT
 ~~~~
 
-# Configure Database credential
+### Configure Database credential
 Create  `/etc/.mysqld_exporter.cnf` and add below line in it. Edit the value of user and password based on real information you have entered in previous steps.
 ~~~~
 [client]
@@ -70,12 +70,12 @@ Then create service file for Mysql exporter. Note that here we create the servic
  WantedBy=multi-user.target
 ~~~~
 
- # Enable and start Mysql service
+### Enable and start Mysql service
 ~~~~
 systemctl daemon-reload; systemctl enable mysql_exporter; systemctl start mysql_exporter
 ~~~~
 
- # Sample configuration for prometheus.yml
+### Sample configuration for prometheus.yml
 ~~~~
 - job_name: 'mysql_server'
     scrape_interval: 5s
