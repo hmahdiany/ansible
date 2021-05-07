@@ -1,0 +1,128 @@
+curl -LO https://github.com/prometheus/alertmanager/releases/download/v0.21.0/alertmanager-0.21.0.linux-amd64.tar.gz
+tar xf alertmanager-0.21.0.linux-amd64.tar.gz
+cp alertmanager-0.21.0.linux-amd64/amtool alertmanager-0.21.0.linux-amd64/alertmanager /usr/local/bin
+mkdir /etc/alertmanager
+cp alertmanager-0.21.0.linux-amd64/alertmanager.yml /etc/alertmanager
+mkdir /etc/alertmanager/data
+useradd -rs /bin/false alertmanager
+chown alertmanager:alertmanager /usr/local/bin/amtool /usr/local/bin/alertmanager
+chown -R alertmanager:alertmanager /etc/alertmanager
+vim /etc/systemd/system/alertmanager.service
+[Unit]
+Description=Alert Manager
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=alertmanager
+Group=alertmanager
+ExecStart=/usr/local/bin/alertmanager \
+  --config.file=/etc/alertmanager/alertmanager.yml \
+  --storage.path=/etc/alertmanager/data
+  --web.external-url=http://localhost:9093
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+vim /etc/prometheus/rules.yaml
+groups:
+- name: AllInstances
+  rules:
+  - alert: InstanceDown
+    # Condition for alerting
+    expr: up == 0
+    for: 1m
+    # Annotation - additional informational labels to store more information
+    annotations:
+      title: 'Instance {{ $labels.instance }} down'
+      description: '{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute.'
+    # Labels - additional labels to be attached to the alert
+    labels:
+      severity: 'critical'
+
+vim /etc/nginx/conf.d/alertmanager.conf
+server {
+  listen 80;
+  server_name alertmanager.art.net;
+
+  location / {
+    auth_basic "Prometheus server authentication";
+    auth_basic_user_file /etc/nginx/.htpasswd;
+    proxy_pass http://localhost:9093;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_cache_bypass $http_upgrade;
+  }
+}
+
+systemctl daemon-reload; systemctl enable alertmanager; systemctl start alertmanager; systemctl status alertmanager;
+
+vim /etc/prometheus/prometheus.yml
+global:
+  scrape_interval: 15s
+  
+rule_files:
+  - rules.yaml
+
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - localhost:9093
+
+scrape_configs:
+  - job_name: 'prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'node_exporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['localhost:9100']
+      
+ vim /etc/alertmanager/alertmanager.yml
+ global:
+  resolve_timeout: 5m
+  slack_api_url: 'https://hooks.slack.com/services/x/x/x'
+
+route:
+  group_by: ['alertname']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'DevOps'
+
+receivers:
+- name: 'DevOps'
+  slack_configs:
+  - channel: '#general'
+    send_resolved: true
+    icon_url: https://avatars3.githubusercontent.com/u/3380462
+    title: |-
+     [{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] {{ .CommonLabels.alertname }} for {{ .CommonLabels.job }}
+     {{- if gt (len .CommonLabels) (len .GroupLabels) -}}
+       {{" "}}(
+       {{- with .CommonLabels.Remove .GroupLabels.Names }}
+         {{- range $index, $label := .SortedPairs -}}
+           {{ if $index }}, {{ end }}
+           {{- $label.Name }}="{{ $label.Value -}}"
+         {{- end }}
+       {{- end -}}
+       )
+     {{- end }}
+    text: >-
+     {{ range .Alerts -}}
+     *Alert:* {{ .Annotations.title }}{{ if .Labels.severity }} - `{{ .Labels.severity }}`{{ end }}
+
+     *Description:* {{ .Annotations.description }}
+
+     *Details:*
+       {{ range .Labels.SortedPairs }} • *{{ .Name }}:* `{{ .Value }}`
+       {{ end }}
+     {{ end }}
+

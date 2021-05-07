@@ -1,0 +1,91 @@
+---
+- name: Create user for alertmanager
+  user:
+          name: alertmanager
+          comment: alertmanager service user
+          shell: /bin/false
+          create_home: no
+
+- name: Create directory /etc/alertmanager
+  file:
+          path: /etc/alertmanager
+          state: directory
+          owner: alertmanager
+          group: alertmanager
+
+- name: Create directory /etc/alertmanager/data
+  file:
+          path: /etc/alertmanager/data
+          state: directory
+          owner: alertmanager
+          group: alertmanager
+
+- name: Download alertmanager
+  get_url:
+          url: '{{ latest_version }}'
+          dest: /tmp
+
+- name: Extract alertmanager tar archive
+  unarchive:
+          src: /tmp/{{ package_name }}.tar.gz
+          dest: /tmp
+          remote_src: yes
+
+- name: Copy alertmanager binary file to /usr/local/bin
+  copy:
+          src: /tmp/{{ package_name }}/alertmanager
+          dest: /usr/local/bin
+          owner: alertmanager
+          group: alertmanager
+          remote_src: yes
+          mode: 0755
+
+- name: Copy amtool binary file to /usr/local/bin
+  copy:
+          src: /tmp/{{ package_name }}/amtool
+          dest: /usr/local/bin
+          owner: alertmanager
+          group: alertmanager
+          remote_src: yes
+          mode: 0755
+
+- name: Copy alertmanager.yaml directory to /etc/alertmanager
+  copy:
+          src: /tmp/{{ package_name }}/alertmanager.yml
+          dest: /etc/alertmanager
+          owner: alertmanager
+          group: alertmanager
+          remote_src: yes
+
+- name: Copy rules.yaml to /etc/prometheus/
+  template:
+          src: rules.yaml
+          dest: /etc/prometheus
+          owner: prometheus
+          group: prometheus
+  notify: prometheus reload
+
+- name: Copy alertmanager.conf to /etc/nginx/conf.d
+  template:
+          src: alertmanager.conf
+          dest: /etc/nginx/conf.d
+  notify: nginx reload
+
+- name: Add alertmanager service file
+  template:
+          src: alertmanager.service
+          dest: /etc/systemd/system
+          owner: root
+          group: root
+
+- name: Reload daemon
+  systemd:
+          daemon_reload: yes
+          
+- name: Enable and start alertmanager service
+  systemd:
+          name: alertmanager
+          enabled: yes
+          state: started
+
+

@@ -1,0 +1,10 @@
+---
+- name: prometheus reload
+  service:
+          name: prometheus
+          state: reloaded
+
+- name: nginx reload
+  service:
+          name: nginx
+          state: reloaded

@@ -1,0 +1,17 @@
+[Unit]
+Description=Alert Manager
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=alertmanager
+Group=alertmanager
+ExecStart=/usr/local/bin/alertmanager \
+  --config.file=/etc/alertmanager/alertmanager.yml \
+  --storage.path=/etc/alertmanager/data
+  --web.external-url=http://localhost:9093
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

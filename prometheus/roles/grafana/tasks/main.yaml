@@ -1,0 +1,42 @@
+---
+- name: Install apt-transport-https software-properties-common wget
+  apt:
+          name:
+                  - apt-transport-https
+                  - software-properties-common
+                  - wget
+
+- name: Import repository key
+  shell:
+          cmd: wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
+          warn: false
+
+- name: Add repository
+  shell:
+          cmd: echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list 
+          warn: false
+
+- name: Install grafana
+  apt:
+          update_cache: yes
+          name: grafana
+          state: present
+          
+- name: Configure Grafana to listen to 127.0.0.1
+  replace:
+          path: /etc/grafana/grafana.ini
+          regexp: ';http_addr ='
+          replace: http_addr = 127.0.0.1
+
+- name: Enable and start grafana
+  service:
+          name: grafana-server
+          daemon-reload: yes
+          enabled: yes
+          state: started
+
+- name: Add Nginx configuration
+  template:
+          src: grafana.conf
+          dest: /etc/nginx/conf.d
+  notify: nginx reload

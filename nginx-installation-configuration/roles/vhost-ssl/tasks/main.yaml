@@ -1,0 +1,9 @@
+---
+- name: configure nginx with ssl redirection
+  template:
+          src: vhost-ssl.conf
+          dest: /etc/nginx/conf.d/{{ server_name }}.conf
+          owner: root
+          group: root
+          mode: 0644
+          #notify: reload nginx

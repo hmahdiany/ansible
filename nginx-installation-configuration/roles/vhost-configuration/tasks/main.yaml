@@ -1,0 +1,17 @@
+---
+- name: copying upstream.conf
+  template:
+          src: upstream.conf
+          dest: /etc/nginx/conf.d/
+          owner: root
+          group: root
+          mode: 0644
+
+- name: configure nginx
+  template:
+          src: vhost.conf
+          dest: /etc/nginx/conf.d/{{ server_name }}.conf
+          owner: root
+          group: root
+          mode: 0644
+  notify: reload nginx

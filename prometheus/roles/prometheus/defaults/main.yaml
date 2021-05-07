@@ -1,0 +1,6 @@
+---
+server_name: monitoring.shm.local
+<<<<<<< HEAD
+slack_webhook_url: https://hooks.slack.com/services/x/x/x
+=======
+>>>>>>> de185e575b070b9397365052e9c3418b081fae9a

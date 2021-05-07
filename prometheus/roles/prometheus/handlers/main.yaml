@@ -1,0 +1,10 @@
+---
+- name: reload prometheus
+  systemd:
+          name: prometheus
+          state: reloaded
+
+- name: reload node exporter
+  systemd:
+          name: node_exporter
+          state: reloaded

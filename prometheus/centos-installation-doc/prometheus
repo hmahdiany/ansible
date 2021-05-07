@@ -1,0 +1,105 @@
+useradd --no-create-home --shell /bin/false prometheus
+useradd --no-create-home --shell /bin/false node_exporter
+
+mkdir /etc/prometheus
+mkdir /var/lib/prometheus
+chown prometheus:prometheus /etc/prometheus
+chown prometheus:prometheus /var/lib/prometheus
+
+curl -LO https://github.com/prometheus/prometheus/releases/download/v2.23.0/prometheus-2.23.0.linux-amd64.tar.gz
+tar xf prometheus-2.23.0.linux-amd64.tar.gz
+cp prometheus-2.23.0.linux-amd64/prometheus /usr/local/bin/
+cp prometheus-2.23.0.linux-amd64/promtool /usr/local/bin/
+chown prometheus:prometheus /usr/local/bin/prometheus
+chown prometheus:prometheus /usr/local/bin/promtool
+cp -r prometheus-2.23.0.linux-amd64/consoles /etc/prometheus/
+cp -r prometheus-2.23.0.linux-amd64/console_libraries /etc/prometheus/
+chown -R prometheus:prometheus /etc/prometheus/consoles
+chown -R prometheus:prometheus /etc/prometheus/console_libraries
+vim /etc/prometheus/prometheus.yml
+	global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'node_exporter'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['localhost:9100']
+	  
+chown prometheus:prometheus /etc/prometheus/prometheus.yml
+vim /etc/systemd/system/prometheus.service
+	[Unit]
+Description=Prometheus
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=prometheus
+Group=prometheus
+Type=simple
+ExecStart=/usr/local/bin/prometheus \
+    --config.file /etc/prometheus/prometheus.yml \
+    --storage.tsdb.path /var/lib/prometheus/ \
+    --web.console.templates=/etc/prometheus/consoles \
+    --web.console.libraries=/etc/prometheus/console_libraries
+
+[Install]
+WantedBy=multi-user.target
+
+systemctl daemon-reload; systemctl start prometheus; systemctl enable prometheus; systemctl status prometheus
+
+curl -LO https://github.com/prometheus/node_exporter/releases/download/v1.0.1/node_exporter-1.0.1.linux-amd64.tar.gz
+tar xf node_exporter-1.0.1.linux-amd64.tar.gz 
+cp node_exporter-1.0.1.linux-amd64/node_exporter /usr/local/bin/
+chown node_exporter:node_exporter /usr/local/bin/node_exporter
+vim /etc/systemd/system/node_exporter.service
+	[Unit]
+Description=Node Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+ExecStart=/usr/local/bin/node_exporter --collector.systemd --collector.processes --collector.systemd.unit-whitelist=(sshd|chronyd|jenkins).service
+
+[Install]
+WantedBy=multi-user.target
+
+systemctl daemon-reload; systemctl start prometheus; systemctl enable prometheus; systemctl status prometheus
+
+vim /etc/prometheus/prometheus.yml
+
+systemctl restart prometheus
+
+vim /etc/yum.repos.d/nginx.repo
+	[nginx-stable]
+name=nginx stable repo
+baseurl=http://nginx.org/packages/centos/$releasever/$basearch/
+gpgcheck=1
+enabled=1
+gpgkey=https://nginx.org/keys/nginx_signing.key
+module_hotfixes=true
+
+[nginx-mainline]
+name=nginx mainline repo
+baseurl=http://nginx.org/packages/mainline/centos/$releasever/$basearch/
+gpgcheck=1
+enabled=0
+gpgkey=https://nginx.org/keys/nginx_signing.key
+module_hotfixes=true
+
+yum -y install nginx
+yum -y install httpd-tools
+htpasswd -c /etc/nginx/.htpasswd monitoring
+vim /etc/nginx/conf.d/prometheus.conf
+
+systemctl start nginx
+firewall-cmd --add-port=80/tcp --permanent;firewall-cmd --reload
+

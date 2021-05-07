@@ -1,0 +1,166 @@
+---
+- name: Create user for prometheus
+  user:
+          name: prometheus
+          comment: prometheus service user
+          shell: /bin/false
+          create_home: no
+
+- name: Create user for node exporter
+  user:
+          name: node_exporter
+          comment: node exporter service user
+          shell: /bin/false
+          create_home: no
+
+- name: Create directory /etc/prometheus
+  file:
+          path: /etc/prometheus
+          state: directory
+          owner: prometheus
+          group: prometheus
+
+- name: Create directory /var/lib/prometheus
+  file:
+          path: /var/lib/prometheus
+          state: directory
+          owner: prometheus
+          group: prometheus
+
+- name: Download prometheus
+  get_url:
+          url: https://github.com/prometheus/prometheus/releases/download/v2.23.0/prometheus-2.23.0.linux-amd64.tar.gz
+          dest: /tmp
+
+- name: Download node exporter
+  get_url:
+          url: https://github.com/prometheus/node_exporter/releases/download/v1.0.1/node_exporter-1.0.1.linux-amd64.tar.gz
+          dest: /tmp
+
+- name: Extract prometheus tar archive
+  unarchive:
+          src: /tmp/prometheus-2.23.0.linux-amd64.tar.gz
+          dest: /tmp
+          remote_src: yes
+
+- name: Extract node exporter tar arvhive
+  unarchive:
+          src: /tmp/node_exporter-1.0.1.linux-amd64.tar.gz
+          dest: /tmp
+          remote_src: yes
+
+- name: Copy prometheus binary file to /usr/local/bin
+  copy:
+          src: /tmp/prometheus-2.23.0.linux-amd64/prometheus
+          dest: /usr/local/bin
+          owner: prometheus
+          group: prometheus
+          remote_src: yes
+          mode: 0755
+
+- name: Copy promtool binary file to /usr/local/bin
+  copy:
+          src: /tmp/prometheus-2.23.0.linux-amd64/promtool
+          dest: /usr/local/bin
+          owner: prometheus
+          group: prometheus
+          remote_src: yes
+          mode: 0755
+
+- name: Copy consoles directory to /etc/prometheus
+  copy:
+          src: /tmp/prometheus-2.23.0.linux-amd64/consoles
+          dest: /etc/prometheus
+          owner: prometheus
+          group: prometheus
+          remote_src: yes
+
+- name: Copy consoles_libraries directory to /etc/prometheus
+  copy:
+          src: /tmp/prometheus-2.23.0.linux-amd64/console_libraries
+          dest: /etc/prometheus
+          owner: prometheus
+          group: prometheus
+          remote_src: yes
+
+- name: Copy prometheus.yaml to /etc/prometheus/
+  template:
+          src: prometheus.yml
+          dest: /etc/prometheus
+          owner: prometheus
+          group: prometheus
+
+- name: Add prometheus service file
+  template:
+          src: prometheus.service
+          dest: /etc/systemd/system
+          owner: root
+          group: root
+
+- name: Copy node exporter binary file to /usr/local/bin
+  copy:
+          src: /tmp/node_exporter-1.0.1.linux-amd64/node_exporter
+          dest: /usr/local/bin
+          owner: node_exporter
+          group: node_exporter
+          remote_src: yes
+          mode: 0755
+
+- name: Add node exporter service file
+  template:
+          src: node_exporter.service
+          dest: /etc/systemd/system
+          owner: root
+          group: root
+
+- name: Reload daemon
+  systemd:
+          daemon_reload: yes
+          
+- name: Enable and start prometheus service
+  systemd:
+          name: prometheus
+          enabled: yes
+          state: started
+
+- name: Enable and start node exporter
+  systemd:
+          name: node_exporter
+          enabled: yes
+          state: started
+
+- name: Install some basic packages
+  apt:
+          name:
+                  - curl
+                  - gnupg2
+                  - ca-certificates
+                  - lsb-release 
+          state: present
+
+- name: Add Nginx repo
+  shell:
+          cmd: echo "deb http://nginx.org/packages/debian `lsb_release -cs` nginx"  | sudo tee /etc/apt/sources.list.d/nginx.list
+
+- name: Import repository key
+  shell:
+          cmd: curl -fsSL https://nginx.org/keys/nginx_signing.key | sudo apt-key add -
+          warn: false
+
+- name: Install Nginx
+  apt:
+          update_cache: yes
+          name: nginx
+          state: present
+
+- name: Configure Nginx
+  template:
+          src: prometheus.conf
+          dest: /etc/nginx/conf.d
+- name: Enable Nginx
+  systemd:
+          name: nginx
+          enabled: yes
+          state: started
+
+

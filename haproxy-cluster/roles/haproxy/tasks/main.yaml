@@ -1,0 +1,39 @@
+---
+- name: Install HAproxy
+  apt:
+          name: haproxy
+          state: present
+
+- name: Allow access to tcp port 80 
+  ufw:
+          rule: allow
+          port: 80
+          proto: tcp
+
+- name: Allow access to tcp port 443 
+  ufw:
+          rule: allow
+          port: 443
+          proto: tcp
+
+- name: Allow access to port 8080
+  ufw:
+          rule: allow
+          port: 8080
+          proto: tcp
+
+- name: Allow access to port "{{ listen_port }}"
+  ufw:
+          rule: allow
+          port: "{{ listen_port }}"
+          proto: tcp
+
+- name: Configure HAproxy
+  template:
+          src: haproxy.cfg
+          dest: /etc/haproxy/
+          owner: root
+          group: root
+          mode: 0644
+
+  notify: reload haproxy

@@ -1,0 +1,78 @@
+---
+- name: installing  Nginx  dependencies (Debian)
+  apt:
+          name:
+                  - curl
+                  - gnupg2
+                  - ca-certificates
+                  - lsb-release
+          state: present
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: installing Nginx dependencies (Centos)
+  yum:
+          name: yum-utils
+          state: present
+  when: ansible_facts['os_family'] == 'RedHat'
+
+- name: adding Nginx repository (Debian)
+  shell:
+          cmd: echo "deb http://nginx.org/packages/debian `lsb_release -cs` nginx"  | sudo tee /etc/apt/sources.list.d/nginx.list
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: importing repository key (Debian)
+  apt_key:
+          url: https://nginx.org/keys/nginx_signing.key
+          state: present
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: adding Nginx repository (RedHat)
+  template:
+          src: nginx.repo
+          dest: /etc/yum.repo.d
+  when: ansible_facts['os_family'] == 'RedHat'
+
+
+- name: installing Nginx (Debian)
+  apt:
+          update_cache: yes
+          name: nginx
+          state: present
+  when: ansible_facts['os_family'] == 'Debian'
+
+- name: installing Nginx (RedHat)
+  yum:
+          name: nginx
+          state: present
+  when: ansible_facts['os_family'] == 'RedHat'
+
+- name: Generating DH key
+  shell:
+          cmd: openssl dhparam -out /etc/nginx/dhparam.pem 2048
+
+- name: creating nginxconfig.io directory
+  file:
+          path: /etc/nginx/nginxconfig.io
+          state: directory
+          mode: '0755'
+
+- name: adding Nginx main configuration file
+  template:
+          src: nginx.conf
+          dest: /etc/nginx/nginx.conf
+
+- name: adding Nginx general configuration
+  template:
+          src: general.conf
+          dest: /etc/nginx/nginxconfig.io
+
+- name: adding Nginx proxy configuration
+  template:
+          src: proxy.conf
+          dest: /etc/nginx/nginxconfig.io
+
+- name: enabling and starting Nginx service
+  systemd:
+          name: nginx
+          enabled: yes
+          state: started

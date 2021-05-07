@@ -1,0 +1,11 @@
+---
+- hosts: proxyServers
+  become: true
+  roles:
+          - role: nginx-installation
+            tags: installation
+
+          - role: vhost-configuration
+            tags: configuration
+
+

@@ -1,0 +1,50 @@
+---
+- name: Configure IP forwarding 
+  replace:
+          path: /etc/sysctl.conf
+          regexp: '#net.ipv4.ip_forward=1'
+          replace: net.ipv4.ip_forward=1
+
+- name: Configure non-local binding
+  shell:
+          cmd: echo "net.ipv4.ip_nonlocal_bind = 1" >> /etc/sysctl.conf
+
+- name: Enable IP forwarding and non-local binding
+  shell:
+          cmd: sysctl -p
+
+- name: Install Keepalived
+  apt:
+          name: keepalived
+          state: present
+
+- name: Install Firewall
+  apt:
+          name: ufw
+          state: present
+
+- name: Enable and set default policy for UFW
+  ufw:
+          state: enabled
+          policy: deny
+          logging: 'on'
+
+- name: Allow SSH
+  ufw:
+          rule: allow
+          name: ssh
+
+- name: Allow VRRP
+  ufw:
+          rule: allow
+          dest: 224.0.0.18
+
+- name: Configure Keepalived
+  template:
+          src: keepalived.conf
+          dest: /etc/keepalived/
+          owner: root
+          group: root
+          mode: 0644
+
+  notify: reload keepalived
