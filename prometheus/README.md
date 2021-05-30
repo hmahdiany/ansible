@@ -31,3 +31,38 @@ This playbook configure UFW to only open below ports and deny any other incoming
 * 22
 * 80
 * 443
+
+### Authenticaion
+When Ansible has done its jobs if you want to enable basic authentication for Prometheus and Alertmanager web panel, you can do below steps:
+Install `apache2-utils`:
+~~~~
+sudo apt install apache2-utils
+~~~~
+
+Create a file which contains the username and a hash password. Here the user name is `admin`:
+~~~~
+sudo htpasswd -c /etc/nginx/.htpasswd admin
+~~~~
+
+Now change Nginx configuration file to enable basic authentication. Here is a sample configuration:
+~~~~
+server {
+  listen 80;
+  server_name prometheus.mentorship.local;
+
+  access_log /var/log/nginx/prometheus-access.log;
+  error_log /var/log/nginx/prometheus-error.log;
+
+  location / {
+    auth_basic  "Need Authentication";
+    auth_basic_user_file /etc/nginx/.htpasswd;
+
+    proxy_pass http://localhost:9090;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_cache_bypass $http_upgrade;
+  }
+}
+~~~~
