@@ -33,7 +33,7 @@ This playbook configure UFW to only open below ports and deny any other incoming
 * 443
 
 ### Authenticaion
-When Ansible has done its jobs if you want to enable basic authentication for Prometheus and Alertmanager web panel, you can do below steps:
+When Ansible do its jobs if you want to enable basic authentication for Prometheus and Alertmanager web panel, you can do below steps:
 Install `apache2-utils`:
 ~~~~
 sudo apt install apache2-utils
