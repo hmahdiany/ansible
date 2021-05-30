@@ -4,6 +4,6 @@ nodeexporter_version: 1.1.2
 os_arch: linux-amd64
 retention_time: 60d
 retention_size: 40GB
-server_name: monitoring.mentorship.local
+prometheus_url: monitoring.mentorship.local
 targets:
         - {name: k8s-prometheus, url: 'domain.com', username: admin, password: 123}

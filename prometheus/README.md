@@ -1,5 +1,5 @@
 # Install Prometheus, Alertmanager and Grafana
-This ansible project is used to install a monitoring platform based on Prometheus, Alertmanager and Grafana in a single Debian server. There are three main roles in 'playbook.yaml': `prometheus`, `alertmanager` and `grafana` which each of them install one module. 
+This ansible project is used to install a monitoring platform based on Prometheus, Alertmanager and Grafana in a single Debian server. There are four main roles in 'playbook.yaml': `firewall`, `prometheus`, `alertmanager` and `grafana` which each of them install one module. 
 
 ## Requirements
 Install Ansible on your local machine and make sure you have root access on remote machines.
@@ -7,16 +7,27 @@ Install Ansible on your local machine and make sure you have root access on remo
 ## Role Variables
 At first before doing anything edit the `inventory` file based on your server information.
 
-For installing Prometheus first we should edit variables in `roles/prometheus/defaults/main.yaml`.
+Variables in `roles/alertmanager/defaults/main.yaml`
 
-* `server_name`: This is the Prometheus url in Nginx configuration and will be  replaced in `roles/prometheus/templates/prometheus.conf`
+* `alertmanager_version`: Desire version you want to install.
+* `os_arch`: Operating system architecture you want to install. Used for downloading the correct package.
+* `alertmanager_url`: Used to configure Nginx. You can access to alertmanager web panel via this name so it should be a valid DNS name.
+* `slack_webhook_url`: (optional) Add correct slack webhook url if you want to send alerts to your slack channel.
 
-For installing Alertmanager add correct values in `roles/alertmanager/defaults/main.yaml'. Here are definitions:
+Variables in `roles/prometheus/defaults/main.yaml`.
 
-* `latest_version`: Download link of the latest version of Alertmanager
+* `prometheus_version`: Desirable Prometheus version you want to install.
+* `nodeexporter_version`: Desirable Node Exporter version you want to install.
+* `os_arch`: Operating system architecture you want to install. Used for downloading the correct package.
+* `retention_time`: Number of days you want Prometheus to keep history. Used to configure `--storage.tsdb.retention.time` in `role/prometheus/templates/prometheus.service`. Default value is `20d`.
+* `retention_size`: Maximum disk which Prometheus can use to keep history. Default value is `40GB`.
+* `prometheus_url`: Used to configure Nginx. You can access to prometheus web panel via this name so it should be a valid DNS name.
+* `targets`: (optional) If you know the targets at the time of installation you can add them to configure `role/prometheus/templates/prometheus.yml`
 
-* `package_name`: The actual package name which will be downloaded for example: `alertmanager-0.21.0.linux-amd64`
 
-* `alertmanager_url`: Alertmanager url in Nginx configuration. It will be added in `roles/alertmanager/templates/alertmanager.conf`
+### Important note:
+This playbook configure UFW to only open below ports and deny any other incoming traffic So take care about your other firewall configuration.
 
- 
+* 22
+* 80
+* 443
