@@ -2,7 +2,7 @@
 - name: prometheus reload
   service:
           name: prometheus
-          state: reloaded
+          state: restarted
 
 - name: nginx reload
   service:

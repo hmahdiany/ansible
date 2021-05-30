@@ -1,2 +1,2 @@
 [monitoring]
-ansible-c1
+localhost ansible_user=king ansible_port=5022

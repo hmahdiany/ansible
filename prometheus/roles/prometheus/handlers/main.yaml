@@ -2,7 +2,7 @@
 - name: reload prometheus
   systemd:
           name: prometheus
-          state: reloaded
+          state: restarted
 
 - name: reload node exporter
   systemd:

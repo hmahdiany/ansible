@@ -7,7 +7,10 @@ After=network-online.target
 User=node_exporter
 Group=node_exporter
 Type=simple
-ExecStart=/usr/local/bin/node_exporter --collector.systemd --collector.processes --collector.systemd.unit-whitelist=(sshd).service
+ExecStart=/usr/local/bin/node_exporter --collector.systemd --collector.processes
+SyslogIdentifier=node_exporter
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
+

@@ -1,6 +1,9 @@
 ---
-server_name: monitoring.shm.local
-<<<<<<< HEAD
-slack_webhook_url: https://hooks.slack.com/services/x/x/x
-=======
->>>>>>> de185e575b070b9397365052e9c3418b081fae9a
+prometheus_version: 2.27.1
+nodeexporter_version: 1.1.2
+os_arch: linux-amd64
+retention_time: 60d
+retention_size: 40GB
+server_name: monitoring.mentorship.local
+targets:
+        - {name: k8s-prometheus, url: 'domain.com', username: admin, password: 123}
