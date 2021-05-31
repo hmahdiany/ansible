@@ -6,4 +6,4 @@ retention_time: 60d
 retention_size: 40GB
 prometheus_url: monitoring.mentorship.local
 targets:
-        - {name: neda-prometheus, url: 'main.prometheus.monitoring.neda.ai.sotoon.ir', username: main-prom, password: jh7ytzq8i}
+        - {name: job-name, url: 'domain.com', username: xxx, password: xxx}
