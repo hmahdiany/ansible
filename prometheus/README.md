@@ -7,12 +7,18 @@ Install Ansible on your local machine and make sure you have root access on remo
 ## Role Variables
 At first before doing anything edit the `inventory` file based on your server information.
 
+Alertmanager is configured to send `Deadman's switch` which is always in firing state and other alerts to two different slack channels.
 Variables in `roles/alertmanager/defaults/main.yaml`
 
 * `alertmanager_version`: Desire version you want to install.
 * `os_arch`: Operating system architecture you want to install. Used for downloading the correct package.
 * `alertmanager_url`: Used to configure Nginx. You can access to alertmanager web panel via this name so it should be a valid DNS name.
 * `slack_webhook_url`: (optional) Add correct slack webhook url if you want to send alerts to your slack channel.
+* `proxy_url`: (optional) Proxy to use in oreder to contact with slack webhook url.
+* `channel_general`: Name of the slack channel to send all alerts except `Deadman's switch` alert.
+* `channel_deadman`: Name of the slack channel to send `Deadman's switch` alerts.
+* `slack_general_webhook`: Webhook address of `channel_general`.
+* `skack_deadman_webhook`: Webhook address of `channel_deadman`.
 
 Variables in `roles/prometheus/defaults/main.yaml`.
 

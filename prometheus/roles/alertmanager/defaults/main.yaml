@@ -2,5 +2,10 @@
 alertmanager_version: 0.22.1
 os_arch: linux-amd64
 alertmanager_url: alertmanager.mentorship.local
-slack_webhook_url: https://hooks.slack.com/services/x/x
+slack_webhook_url: 
+proxy_url: http://myproxy
+channel_general: general # add name without (#)
+channel_deadman: deadman-switch # add name without (#)
+slack_general_webhook: https://hooks.slack.com/services/g/g
+slack_deadman_webhook: https://hooks.slack.com/services/d/d
 

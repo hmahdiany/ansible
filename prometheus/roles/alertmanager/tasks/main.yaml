@@ -20,6 +20,13 @@
           owner: alertmanager
           group: alertmanager
 
+- name: Create directory /etc/alertmanager/templates
+  file:
+          path: /etc/alertmanager/templates
+          state: directory
+          owner: alertmanager
+          group: alertmanager
+
 - name: Download and extract alertmanager tar archive
   unarchive:
           src: https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/alertmanager-{{ alertmanager_version }}.{{ os_arch }}.tar.gz
@@ -48,6 +55,27 @@
   template:
           src: alertmanager.yml
           dest: /etc/alertmanager
+          owner: alertmanager
+          group: alertmanager
+
+- name: Copy title.tmpl directory to /etc/alertmanager/templates
+  template:
+          src: title.tmpl
+          dest: /etc/alertmanager/templates
+          owner: alertmanager
+          group: alertmanager
+
+- name: Copy text.tmpl directory to /etc/alertmanager/templates
+  template:
+          src: text.tmpl
+          dest: /etc/alertmanager/templates
+          owner: alertmanager
+          group: alertmanager
+
+- name: Copy emoji.tmpl directory to /etc/alertmanager/templates
+  template:
+          src: emoji.tmpl
+          dest: /etc/alertmanager/templates
           owner: alertmanager
           group: alertmanager
 
