@@ -1,0 +1,26 @@
+- name: Enable UFW 
+  ufw:
+          state: enabled
+
+- name: Limit SSH connections
+  ufw:
+          rule: limit
+          port: ssh
+          proto: tcp
+
+- name: Open port 80
+  ufw:
+          rule: allow
+          port: 80
+          proto: tcp
+
+- name: Open port 443
+  ufw:
+          rule: allow
+          port: 443
+          proto: tcp
+
+- name: Block other incomming connections
+  ufw:
+          direction: incoming
+          policy: deny

@@ -20,20 +20,22 @@
           owner: alertmanager
           group: alertmanager
 
-- name: Download alertmanager
-  get_url:
-          url: '{{ latest_version }}'
-          dest: /tmp
+- name: Create directory /etc/alertmanager/templates
+  file:
+          path: /etc/alertmanager/templates
+          state: directory
+          owner: alertmanager
+          group: alertmanager
 
-- name: Extract alertmanager tar archive
+- name: Download and extract alertmanager tar archive
   unarchive:
-          src: /tmp/{{ package_name }}.tar.gz
+          src: https://github.com/prometheus/alertmanager/releases/download/v{{ alertmanager_version }}/alertmanager-{{ alertmanager_version }}.{{ os_arch }}.tar.gz
           dest: /tmp
           remote_src: yes
 
 - name: Copy alertmanager binary file to /usr/local/bin
   copy:
-          src: /tmp/{{ package_name }}/alertmanager
+          src: /tmp/alertmanager-{{ alertmanager_version }}.{{ os_arch }}/alertmanager
           dest: /usr/local/bin
           owner: alertmanager
           group: alertmanager
@@ -42,7 +44,7 @@
 
 - name: Copy amtool binary file to /usr/local/bin
   copy:
-          src: /tmp/{{ package_name }}/amtool
+          src: /tmp/alertmanager-{{ alertmanager_version }}.{{ os_arch }}/amtool
           dest: /usr/local/bin
           owner: alertmanager
           group: alertmanager
@@ -50,12 +52,32 @@
           mode: 0755
 
 - name: Copy alertmanager.yaml directory to /etc/alertmanager
-  copy:
-          src: /tmp/{{ package_name }}/alertmanager.yml
+  template:
+          src: alertmanager.yml
           dest: /etc/alertmanager
           owner: alertmanager
           group: alertmanager
-          remote_src: yes
+
+- name: Copy title.tmpl directory to /etc/alertmanager/templates
+  template:
+          src: title.tmpl
+          dest: /etc/alertmanager/templates
+          owner: alertmanager
+          group: alertmanager
+
+- name: Copy text.tmpl directory to /etc/alertmanager/templates
+  template:
+          src: text.tmpl
+          dest: /etc/alertmanager/templates
+          owner: alertmanager
+          group: alertmanager
+
+- name: Copy emoji.tmpl directory to /etc/alertmanager/templates
+  template:
+          src: emoji.tmpl
+          dest: /etc/alertmanager/templates
+          owner: alertmanager
+          group: alertmanager
 
 - name: Copy rules.yaml to /etc/prometheus/
   template:

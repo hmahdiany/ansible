@@ -2,6 +2,11 @@
 - hosts: monitoring
   become: true
   roles:
-          - prometheus
-          - alertmanager
-          - grafana
+          - role: firewall
+            tags: firewall
+          - role: prometheus
+            tags: prometheus
+          - role: alertmanager
+            tags: alertmanager
+          - role: grafana
+            tags: grafana

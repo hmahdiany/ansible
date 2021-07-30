@@ -20,25 +20,17 @@ scrape_configs:
     scrape_interval: 5s
     static_configs:
       - targets: ['localhost:9100']
-      
-<<<<<<< HEAD
- vim /etc/alertmanager/alertmanager.yml
- global:
-  resolve_timeout: 5m
-  slack_api_url: '{{ slack_webhook_url }}'
 
-route:
-  group_by: ['alertname']
-  group_wait: 10s
-  group_interval: 10s
-  repeat_interval: 1h
-  receiver: 'DevOps'
-
-receivers:
-- name: 'DevOps'
-  slack_configs:
-  - channel: '#general'
-    send_resolved: true
-    icon_url: https://avatars3.githubusercontent.com/u/3380462
-=======
->>>>>>> de185e575b070b9397365052e9c3418b081fae9a
+{% if targets %}
+{%for hosts in targets %}
+  - job_name: '{{ hosts.name }}'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['{{ hosts.url }}']
+{% if hosts.username %}
+    basic_auth:
+      username: '{{ hosts.username }}'
+      password: '{{ hosts.password }}'
+{% endif %}
+{% endfor %}
+{% endif %}

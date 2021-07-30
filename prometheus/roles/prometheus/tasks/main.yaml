@@ -27,31 +27,21 @@
           owner: prometheus
           group: prometheus
 
-- name: Download prometheus
-  get_url:
-          url: https://github.com/prometheus/prometheus/releases/download/v2.23.0/prometheus-2.23.0.linux-amd64.tar.gz
-          dest: /tmp
-
-- name: Download node exporter
-  get_url:
-          url: https://github.com/prometheus/node_exporter/releases/download/v1.0.1/node_exporter-1.0.1.linux-amd64.tar.gz
-          dest: /tmp
-
-- name: Extract prometheus tar archive
+- name: Download and extract prometheus tar archive
   unarchive:
-          src: /tmp/prometheus-2.23.0.linux-amd64.tar.gz
+          src: https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.{{ os_arch }}.tar.gz
           dest: /tmp
           remote_src: yes
 
-- name: Extract node exporter tar arvhive
+- name: Download and extract node exporter tar arvhive
   unarchive:
-          src: /tmp/node_exporter-1.0.1.linux-amd64.tar.gz
+          src: https://github.com/prometheus/node_exporter/releases/download/v{{ nodeexporter_version }}/node_exporter-{{ nodeexporter_version }}.{{ os_arch }}.tar.gz
           dest: /tmp
           remote_src: yes
 
 - name: Copy prometheus binary file to /usr/local/bin
   copy:
-          src: /tmp/prometheus-2.23.0.linux-amd64/prometheus
+          src: /tmp/prometheus-{{ prometheus_version }}.{{ os_arch }}/prometheus
           dest: /usr/local/bin
           owner: prometheus
           group: prometheus
@@ -60,7 +50,7 @@
 
 - name: Copy promtool binary file to /usr/local/bin
   copy:
-          src: /tmp/prometheus-2.23.0.linux-amd64/promtool
+          src: /tmp/prometheus-{{ prometheus_version }}.{{ os_arch }}/promtool
           dest: /usr/local/bin
           owner: prometheus
           group: prometheus
@@ -69,7 +59,7 @@
 
 - name: Copy consoles directory to /etc/prometheus
   copy:
-          src: /tmp/prometheus-2.23.0.linux-amd64/consoles
+          src: /tmp/prometheus-{{ prometheus_version }}.{{ os_arch }}/consoles
           dest: /etc/prometheus
           owner: prometheus
           group: prometheus
@@ -77,7 +67,7 @@
 
 - name: Copy consoles_libraries directory to /etc/prometheus
   copy:
-          src: /tmp/prometheus-2.23.0.linux-amd64/console_libraries
+          src: /tmp/prometheus-{{ prometheus_version }}.{{ os_arch }}/console_libraries
           dest: /etc/prometheus
           owner: prometheus
           group: prometheus
@@ -99,7 +89,7 @@
 
 - name: Copy node exporter binary file to /usr/local/bin
   copy:
-          src: /tmp/node_exporter-1.0.1.linux-amd64/node_exporter
+          src: /tmp/node_exporter-{{ nodeexporter_version }}.{{ os_arch }}/node_exporter
           dest: /usr/local/bin
           owner: node_exporter
           group: node_exporter
@@ -133,14 +123,13 @@
   apt:
           name:
                   - curl
-                  - gnupg2
                   - ca-certificates
                   - lsb-release 
           state: present
 
 - name: Add Nginx repo
   shell:
-          cmd: echo "deb http://nginx.org/packages/debian `lsb_release -cs` nginx"  | sudo tee /etc/apt/sources.list.d/nginx.list
+          cmd: echo "deb http://nginx.org/packages/ubuntu `lsb_release -cs` nginx"  | sudo tee /etc/apt/sources.list.d/nginx.list
 
 - name: Import repository key
   shell:

@@ -1,0 +1,50 @@
+global:
+  resolve_timeout: 5m
+{% if slack_webhook_url %}
+  slack_api_url: '{{ slack_webhook_url }}'
+{% endif %}
+
+route:
+  receiver: 'slack-general'
+  group_by: ['alertname']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  routes:
+  - receiver: 'slack-alertmanager'
+    repeat_interval: 30m
+    matchers:
+    - alertmanager="healthy"
+
+receivers:
+- name: 'slack-general'
+  slack_configs:
+  - channel: '#{{ channel_general }}'
+{% if proxy_url %}
+    http_config:
+      proxy_url: '{{ proxy_url }}'
+{% endif %}
+    api_url: '{{ slack_general_webhook }}'
+    send_resolved: true
+    icon_emoji: '{{ '{{' }} if eq .Status "firing" {{ '}}' }}:face_with_head_bandage:{{ '{{' }} else {{ '}}' }}:hugging_face:{{ '{{' }} end {{ '}}' }}'
+    title: '{{ '{{' }} template  "slack.title" . {{ '}}' }}'
+    text: '{{ '{{' }} template "slack.text" . {{ '}}' }}'
+
+- name: 'slack-alertmanager'
+  slack_configs:
+  - channel: '#{{ channel_deadman }}'
+{% if proxy_url %}
+    http_config:
+      proxy_url: '{{ proxy_url }}'
+{% endif %}
+    api_url: '{{ slack_deadman_webhook }}'
+    send_resolved: false
+    icon_emoji: '{{ '{{' }} template "slack.emoji" . {{ '}}' }}'
+    title: '{{ '{{' }} template  "slack.title" . {{ '}}' }}'
+    text: '{{ '{{' }} template "slack.text" . {{ '}}' }}'
+
+templates:
+  - '/etc/alertmanager/templates/title.tmpl'
+  - '/etc/alertmanager/templates/text.tmpl'
+  - '/etc/alertmanager/templates/emoji.tmpl'
+
