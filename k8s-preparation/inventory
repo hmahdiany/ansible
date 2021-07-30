@@ -1,0 +1,16 @@
+[masters]
+192.168.1.151
+192.168.1.152
+192.168.1.153
+
+[workers]
+192.168.1.161
+192.168.1.162
+
+[k8sServers:children]
+masters
+workers
+
+[k8sServers:vars]
+ansible_user=king
+
